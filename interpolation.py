@@ -15,14 +15,42 @@ def main_task_func(x):
     return x * sin(x) / 3
 
 
+def main_task_func_diff(x):
+    return sin(x)/3 + x*cos(x)/3
+
+
+def main_task_func_diff2(x):
+    return (2*cos(x) - x*sin(x))/3
+
+
 def test_task_func(x):
     if x < 0:
         return x ** 3 + 3*x**2
     return -x ** 3 + 3*x**2
 
 
+def test_task_func_diff(x):
+    if x < 0:
+        return 3*x ** 2 + 6*x
+    return -3*x ** 2 + 6*x
+
+
+def test_task_func_diff2(x):
+    if x < 0:
+        return 6*x + 6
+    return -6*x + 6
+
+
 def osc_task_func(x):
     return main_task_func(x) + cos(10*x)
+
+
+def osc_task_func_diff(x):
+    return main_task_func_diff(x) - 10*sin(10*x)
+
+
+def osc_task_func_diff2(x):
+    return main_task_func_diff2(x) - 100*cos(10*x)
 
 
 # Кубический сплайн в каноническом виде
@@ -100,18 +128,24 @@ def cubic_interpolation(h, border1, border2, f_lst, x, x_new, choice):
 
     if choice == '2':
         F = [main_task_func(i) for i in x_new]
+        dF = [main_task_func_diff(i) for i in x_new]
+        ddF = [main_task_func_diff2(i) for i in x_new]
     elif choice == '1':
         F = [test_task_func(i) for i in x_new]
+        dF = [test_task_func_diff(i) for i in x_new]
+        ddF = [test_task_func_diff2(i) for i in x_new]
     else:
         F = [osc_task_func(i) for i in x_new]
-    dF = get_diff(F, x_new)
+        dF = [osc_task_func_diff(i) for i in x_new]
+        ddF = [osc_task_func_diff2(i) for i in x_new]
+
     dS = get_diff(res, x_new)
+    ddS = get_diff(dS, x_new)
 
     with open('table_two.csv', 'w', newline='') as csvfile:
         spamwriter = csv.writer(csvfile, delimiter=',',
                                 quotechar=',', quoting=csv.QUOTE_MINIMAL)
-        spamwriter.writerow(['j', 'xj', 'F(xj)', 'S(xj)', '|F(xj)-S(xj)|', 'dF(xj)', 'dS(xj)', 'dF(xj)-dS(xj)'])
+        spamwriter.writerow(['j', 'xj', 'F(xj)', 'S(xj)', '|F(xj)-S(xj)|', 'dF(xj)', 'dS(xj)', '|dF(xj)-dS(xj)|', 'ddF(xj)', 'ddS(xj)', '|ddF(xj)-ddS(xj)|'])
         for j in range(0, len(F)):
-            spamwriter.writerow([j+1, x_new[j], F[j], res[j], abs(F[j]-res[j]), dF[j], dS[j], abs(dF[j]-dS[j])])
-
-    return res, F, dF, dS
+            spamwriter.writerow([j+1, x_new[j], F[j], res[j], abs(F[j]-res[j]), dF[j], dS[j], abs(dF[j]-dS[j]), ddF[j], ddS[j], abs(ddF[j]-ddS[j])])
+    return res, F, dF, dS, ddF, ddS
